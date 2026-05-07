@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
     
     <style>
         .inventory-header {
@@ -520,9 +520,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="firebase/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/inventory.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="inventory.js"></script>
 
     <script>
         document.getElementById('sidebarToggle').addEventListener('click', () => {
@@ -543,13 +543,13 @@
 
         const user = JSON.parse(localStorage.getItem('currentUser'));
         if (!user || !user.isAuthenticated || user.role !== 'Admin') {
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.clear();
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
             }
         });
 
