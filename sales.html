@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Point of Sale - Inventory Pro Management System">
+    <title>Point of Sale - Inventory Pro</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        .pos-layout {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 24px;
+            height: calc(100vh - 140px);
+            padding: 24px;
+        }
+
+        .pos-products-panel {
+            display: flex;
+            flex-direction: column;
+            background: var(--lighter-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .pos-search-bar {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .pos-search-bar input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--light-bg);
+            transition: var(--transition-fast);
+        }
+
+        .pos-search-bar input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+
+        .pos-categories {
+            padding: 12px 20px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .category-chip {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background: var(--lighter-bg);
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 13px;
+            transition: var(--transition-fast);
+        }
+
+        .category-chip:hover,
+        .category-chip.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .pos-products-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            align-content: start;
+        }
+
+        .pos-product-card {
+            background: var(--light-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pos-product-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .pos-product-card:active {
+            transform: scale(0.95);
+        }
+
+        .pos-product-card.out-of-stock {
+            opacity: 0.6;
+            cursor: not-allowed;
+            border-color: var(--danger-color);
+        }
+
+        .pos-product-card img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .pos-product-card .product-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .pos-product-card .product-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .pos-product-card .product-stock {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .out-of-stock-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--danger-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Cart Panel */
+        .pos-cart-panel {
+            background: var(--lighter-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+        }
+
+        .cart-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .cart-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+        }
+
+        .cart-customer {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--light-bg);
+        }
+
+        .cart-customer input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .cart-item-price {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 12px;
+        }
+
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: var(--lighter-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition-fast);
+        }
+
+        .qty-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .qty-display {
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .cart-item-total {
+            font-weight: 700;
+            font-size: 14px;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .remove-item-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 16px;
+            transition: var(--transition-fast);
+        }
+
+        .remove-item-btn:hover {
+            color: var(--danger-hover);
+            transform: scale(1.2);
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-cart i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+            opacity: 0.5;
+        }
+
+        .cart-footer {
+            border-top: 2px solid var(--border-color);
+            padding: 20px;
+            background: var(--light-bg);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .cart-total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .cart-total-row.grand-total {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .cart-actions {
+            margin-top: 20px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .checkout-section {
+            margin-top: 12px;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .cash-input-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .cash-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .change-display {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .change-positive {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .change-negative {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .discount-section {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .discount-section input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .discount-section select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background: var(--lighter-bg);
+        }
+
+        .quick-amounts {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quick-amount-btn {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--lighter-bg);
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--transition-fast);
+        }
+
+        .quick-amount-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        @media (max-width: 1024px) {
+            .pos-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .pos-layout {
+                padding: 12px;
+            }
+
+            .pos-products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="posLoader" class="loading-overlay" style="display: none;">
+        <div class="text-center">
+            <div class="spinner spinner-lg spinner-dark"></div>
+            <p class="mt-2 text-muted">Loading products...</p>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <i class="fas fa-cubes"></i>
+                </div>
+                <h2>Inventory Pro</h2>
+                <p id="sidebarRole">POS System</p>
+            </div>
+
+            <nav>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="dashboard.html">
+                            <i class="fas fa-th-large"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="inventory.html">
+                            <i class="fas fa-warehouse"></i>
+                            <span>Inventory</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sales.html" class="active">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Point of Sale</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="reports.html">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer" style="margin-top: auto; padding: 16px;">
+                <button id="logoutBtn" class="btn btn-danger btn-block">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <button id="sidebarToggle" class="btn btn-outline" style="margin-right: 16px;">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1>Point of Sale</h1>
+                        <p><span id="cashierName">Cashier</span> - <span id="currentDateTime"></span></p>
+                    </div>
+                </div>
+
+                <div class="top-bar-right">
+                    <div class="user-menu">
+                        <div class="user-avatar" id="userAvatar">S</div>
+                        <div>
+                            <strong id="userFullName">Sales Rep</strong>
+                            <small style="color: var(--text-secondary);">Cashier</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POS Layout -->
+            <div class="pos-layout">
+                <!-- Products Panel -->
+                <div class="pos-products-panel">
+                    <div class="pos-search-bar">
+                        <input 
+                            type="text" 
+                            id="posSearch" 
+                            placeholder="🔍 Search products by name, barcode, or category..."
+                            autofocus
+                        >
+                    </div>
+
+                    <div class="pos-categories" id="categoryChips">
+                        <button class="category-chip active" data-category="all">All Products</button>
+                        <!-- Categories populated dynamically -->
+                    </div>
+
+                    <div class="pos-products-grid" id="posProductsGrid">
+                        <div class="empty-cart" style="grid-column: 1 / -1;">
+                            <i class="fas fa-box-open"></i>
+                            <p>No products available</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cart Panel -->
+                <div class="pos-cart-panel">
+                    <div class="cart-header">
+                        <h3>
+                            <i class="fas fa-shopping-basket"></i>
+                            Current Sale
+                            <span id="cartCount" class="badge" style="background: rgba(255,255,255,0.3); margin-left: auto;">0 items</span>
+                        </h3>
+                    </div>
+
+                    <div class="cart-customer">
+                        <input 
+                            type="text" 
+                            id="customerName" 
+                            placeholder="👤 Customer name (optional)"
+                        >
+                    </div>
+
+                    <div class="cart-items" id="cartItems">
+                        <div class="empty-cart">
+                            <i class="fas fa-shopping-cart"></i>
+                            <p>Cart is empty</p>
+                            <small>Click on products to add them</small>
+                        </div>
+                    </div>
+
+                    <div class="cart-footer">
+                        <!-- Discount -->
+                        <div class="discount-section" style="margin-bottom: 12px;">
+                            <label style="font-size: 13px; white-space: nowrap;">Discount:</label>
+                            <input 
+                                type="number" 
+                                id="discountInput" 
+                                placeholder="0" 
+                                min="0" 
+                                max="100"
+                                step="0.01"
+                            >
+                            <select id="discountType">
+                                <option value="percent">%</option>
+                                <option value="fixed">$</option>
+                            </select>
+                        </div>
+
+                        <!-- Totals -->
+                        <div class="cart-total-row">
+                            <span>Subtotal:</span>
+                            <span id="subtotalDisplay">$0.00</span>
+                        </div>
+                        <div class="cart-total-row">
+                            <span>Tax (8%):</span>
+                            <span id="taxDisplay">$0.00</span>
+                        </div>
+                        <div class="cart-total-row">
+                            <span>Discount:</span>
+                            <span id="discountDisplay">-$0.00</span>
+                        </div>
+                        <div class="cart-total-row grand-total">
+                            <span>Total:</span>
+                            <span id="totalDisplay">$0.00</span>
+                        </div>
+
+                        <!-- Cash Payment -->
+                        <div class="checkout-section">
+                            <label style="font-size: 13px; font-weight: 600; margin-bottom: 8px; display: block;">
+                                Cash Received
+                            </label>
+                            <div class="cash-input-group">
+                                <span style="font-size: 18px; font-weight: 700;">$</span>
+                                <input 
+                                    type="number" 
+                                    id="cashReceived" 
+                                    placeholder="0.00" 
+                                    min="0" 
+                                    step="0.01"
+                                >
+                            </div>
+                            <div class="quick-amounts">
+                                <button class="quick-amount-btn" onclick="setCashAmount(10)">$10</button>
+                                <button class="quick-amount-btn" onclick="setCashAmount(20)">$20</button>
+                                <button class="quick-amount-btn" onclick="setCashAmount(50)">$50</button>
+                                <button class="quick-amount-btn" onclick="setCashAmount(100)">$100</button>
+                                <button class="quick-amount-btn" onclick="setCashAmount('exact')">Exact</button>
+                                <button class="quick-amount-btn" onclick="setCashAmount(500)">$500</button>
+                                <button class="quick-amount-btn" onclick="setCashAmount(1000)">$1000</button>
+                                <button class="quick-amount-btn" onclick="setCashAmount('clear')">Clear</button>
+                            </div>
+                            <div id="changeDisplay" class="change-display">
+                                Enter cash amount
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="cart-actions">
+                            <button class="btn btn-primary btn-block" id="completeSaleBtn">
+                                <i class="fas fa-check-circle"></i>
+                                Complete Sale (F8)
+                            </button>
+                            <button class="btn btn-danger btn-block" id="clearCartBtn">
+                                <i class="fas fa-trash"></i>
+                                Clear Cart (F9)
+                            </button>
+                            <button class="btn btn-outline btn-block" id="holdSaleBtn">
+                                <i class="fas fa-pause"></i>
+                                Hold Sale
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div class="modal" id="receiptModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3><i class="fas fa-receipt"></i> Receipt Preview</h3>
+                <button class="modal-close" onclick="closeModal('receiptModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="receiptContent">
+                <!-- Receipt content generated dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('receiptModal')">Close</button>
+                <button class="btn btn-primary" onclick="printReceipt()">
+                    <i class="fas fa-print"></i> Print Receipt
+                </button>
+                <button class="btn btn-success" onclick="completeAndNewSale()">
+                    <i class="fas fa-plus"></i> New Sale
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Switcher -->
+    <div class="theme-switcher">
+        <button class="theme-btn" id="themeToggle" title="Toggle theme">
+            <i class="fas fa-moon"></i>
+        </button>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+    <!-- Firebase Config -->
+    <script src="firebase/firebase-config.js"></script>
+    
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/sales.js"></script>
+
+    <script>
+        // Mobile sidebar toggle
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+
+        // Theme toggle
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            this.querySelector('i').className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        });
+
+        // Load theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.querySelector('#themeToggle i').className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+
+        // Update date time
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('currentDateTime').textContent = 
+                now.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 30000);
+
+        // Check authentication
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        if (!user || !user.isAuthenticated) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('cashierName').textContent = user.username;
+            document.getElementById('userFullName').textContent = user.username;
+            document.getElementById('userAvatar').textContent = user.username.charAt(0).toUpperCase();
+            document.getElementById('sidebarRole').textContent = user.role;
+        }
+
+        // Quick cash amount buttons
+        function setCashAmount(amount) {
+            const cashInput = document.getElementById('cashReceived');
+            const totalText = document.getElementById('totalDisplay').textContent;
+            const total = parseFloat(totalText.replace('$', '')) || 0;
+
+            if (amount === 'exact') {
+                cashInput.value = total.toFixed(2);
+            } else if (amount === 'clear') {
+                cashInput.value = '';
+            } else {
+                cashInput.value = amount;
+            }
+            
+            cashInput.dispatchEvent(new Event('input'));
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F8') {
+                e.preventDefault();
+                document.getElementById('completeSaleBtn').click();
+            } else if (e.key === 'F9') {
+                e.preventDefault();
+                document.getElementById('clearCartBtn').click();
+            } else if (e.key === 'Escape') {
+                document.getElementById('posSearch').focus();
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout? Any unsaved sale will be lost.')) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        });
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function printReceipt() {
+            const receiptContent = document.getElementById('receiptContent').innerHTML;
+            const printWindow = window.open('', '_blank', 'width=400,height=600');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Receipt</title>
+                        <style>
+                            body { font-family: 'Courier New', monospace; padding: 20px; }
+                            @media print { body { padding: 0; } }
+                        </style>
+                    </head>
+                    <body>${receiptContent}</body>
+                </html>
+            `);
+            printWindow.document.close();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 500);
+        }
+
+        function completeAndNewSale() {
+            closeModal('receiptModal');
+            if (window.posSystem) {
+                posSystem.cart = [];
+                posSystem.updateCartDisplay();
+                document.getElementById('customerName').value = '';
+                document.getElementById('discountInput').value = '';
+                document.getElementById('cashReceived').value = '';
+                document.getElementById('posSearch').focus();
+            }
+        }
+
+        console.log('✅ POS System loaded successfully');
+    </script>
+</body>
+</html>
