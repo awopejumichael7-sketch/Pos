@@ -18,7 +18,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
     
     <style>
         .dashboard-content {
@@ -403,11 +403,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
     <!-- Firebase Config -->
-    <script src="firebase/firebase-config.js"></script>
+    <script src="firebase-config.js"></script>
     
     <!-- Dashboard Script -->
-    <script src="js/dashboard.js"></script>
-    <script src="js/auth.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="auth.js"></script>
 
     <script>
         // Mobile sidebar toggle
@@ -451,7 +451,7 @@
         // Check authentication
         const user = JSON.parse(localStorage.getItem('currentUser'));
         if (!user || !user.isAuthenticated || user.role !== 'Admin') {
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         } else {
             document.getElementById('usernameDisplay').textContent = user.username;
             document.getElementById('welcomeName').textContent = user.username;
@@ -463,7 +463,7 @@
         document.getElementById('logoutBtn').addEventListener('click', function() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.clear();
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
             }
         });
 
