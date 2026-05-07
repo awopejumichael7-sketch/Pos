@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
     
     <style>
         .pos-layout {
@@ -692,11 +692,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
     <!-- Firebase Config -->
-    <script src="firebase/firebase-config.js"></script>
+    <script src="firebase-config.js"></script>
     
     <!-- Scripts -->
-    <script src="js/auth.js"></script>
-    <script src="js/sales.js"></script>
+    <script src="auth.js"></script>
+    <script src="sales.js"></script>
 
     <script>
         // Mobile sidebar toggle
@@ -738,7 +738,7 @@
         // Check authentication
         const user = JSON.parse(localStorage.getItem('currentUser'));
         if (!user || !user.isAuthenticated) {
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         } else {
             document.getElementById('cashierName').textContent = user.username;
             document.getElementById('userFullName').textContent = user.username;
@@ -780,7 +780,7 @@
         document.getElementById('logoutBtn').addEventListener('click', function() {
             if (confirm('Are you sure you want to logout? Any unsaved sale will be lost.')) {
                 localStorage.clear();
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
             }
         });
 
